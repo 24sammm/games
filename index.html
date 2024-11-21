@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Training Cube</title>
+<style>
+   /* Reset dasar */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: radial-gradient(circle, #1e1e2f, #121213);
+  color: #fff;
+  overflow: hidden;
+}
+
+.container {
+  text-align: center;
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #f39c12;
+  text-shadow: 0 0 10px #f39c12, 0 0 20px #e67e22;
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px #f39c12, 0 0 20px #e67e22;
+  }
+  to {
+    text-shadow: 0 0 20px #f39c12, 0 0 40px #e67e22;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap: 10px;
+  margin: 20px auto;
+}
+
+.grid div {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  border: 2px solid #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.3s ease, transform 0.2s;
+  cursor: pointer;
+}
+
+.grid div.active {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  box-shadow: 0 0 20px #f39c12, 0 0 40px #e67e22;
+  transform: scale(1.1);
+}
+
+.grid div:hover {
+  transform: scale(1.05);
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(41, 128, 185, 0.5);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(41, 128, 185, 0.7);
+}
+
+#message {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #ecf0f1;
+  font-style: italic;
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animasi latar belakang */
+body::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.8));
+  animation: moveBackground 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes moveBackground {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-10%, -10%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Memory Training Cube</h1>
+    <div id="grid" class="grid"></div>
+    <button id="start-button">Start Game</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+const startButton = document.getElementById("start-button");
+const message = document.getElementById("message");
+
+const gridSize = 3;
+let sequence = [];
+let playerSequence = [];
+let isPlayerTurn = false;
+
+// Membuat grid 3x3
+function createGrid() {
+  for (let i = 0; i < gridSize * gridSize; i++) {
+    const cell = document.createElement("div");
+    cell.dataset.index = i;
+    cell.addEventListener("click", handlePlayerClick);
+    grid.appendChild(cell);
+  }
+}
+
+// Menampilkan urutan lampu menyala
+function playSequence() {
+  let index = 0;
+  isPlayerTurn = false;
+  message.textContent = "Perhatikan urutannya...";
+  
+  const interval = setInterval(() => {
+    if (index < sequence.length) {
+      const cell = grid.children[sequence[index]];
+      cell.classList.add("active");
+      setTimeout(() => cell.classList.remove("active"), 500);
+      index++;
+    } else {
+      clearInterval(interval);
+      isPlayerTurn = true;
+      message.textContent = "Sekarang giliran kamu!";
+    }
+  }, 800);
+}
+
+// Menghandle klik pemain
+function handlePlayerClick(e) {
+  if (!isPlayerTurn) return;
+
+  const index = parseInt(e.target.dataset.index);
+  playerSequence.push(index);
+
+  e.target.classList.add("active");
+  setTimeout(() => e.target.classList.remove("active"), 300);
+
+  // Periksa urutan pemain
+  const currentStep = playerSequence.length - 1;
+  if (playerSequence[currentStep] !== sequence[currentStep]) {
+    message.textContent = "Kamu salah! Coba lagi.";
+    resetGame();
+    return;
+  }
+
+  if (playerSequence.length === sequence.length) {
+    message.textContent = "Benar! Persiapkan untuk ronde berikutnya.";
+    setTimeout(startGame, 1000);
+  }
+}
+
+// Memulai permainan
+function startGame() {
+  playerSequence = [];
+  sequence.push(Math.floor(Math.random() * gridSize * gridSize));
+  playSequence();
+}
+
+// Mereset permainan
+function resetGame() {
+  sequence = [];
+  playerSequence = [];
+  isPlayerTurn = false;
+  startButton.disabled = false;
+}
+
+// Event listener tombol start
+startButton.addEventListener("click", () => {
+  resetGame();
+  startButton.disabled = true;
+  message.textContent = "Permainan dimulai!";
+  startGame();
+});
+
+// Inisialisasi grid
+createGrid();
+
+  </script>
+</body>
+</html>
